@@ -137,3 +137,28 @@ document.getElementById('submit-comment').addEventListener('click', async () => 
         fetchComments().then(displayComments);
     }
 });
+// التفاعلات
+async function addReaction(commentId, content) {
+    await fetch(`https://api.github.com/graphql`, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${GITHUB_TOKEN}`,
+            "Content-Type": "application/json",
+            "Accept": "application/vnd.github.squirrel-girl-preview+json"
+        },
+        body: JSON.stringify({
+            query: `
+                mutation {
+                    addReaction(input: {
+                        subjectId: "${commentId}",
+                        content: ${content}
+                    }) {
+                        reaction {
+                            content
+                        }
+                    }
+                }
+            `
+        })
+    });
+}
