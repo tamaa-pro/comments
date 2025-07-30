@@ -1,3 +1,4 @@
+// الإتصال بgithub api
 const REPO_OWNER = "your-username";
 const REPO_NAME = "your-repo";
 const DISCUSSION_CATEGORY_ID = "DIC_kwDO..."; // يمكن الحصول عليه من GitHub API
@@ -39,7 +40,7 @@ async function fetchComments() {
             `
         })
     });
-
+// عرض التعليقات
     return await response.json();
 }
 function displayComments(data) {
@@ -100,3 +101,39 @@ function createCommentElement(author, body, createdAt) {
 
     return commentDiv;
 }
+// ارسال تعليق جديد
+document.getElementById('submit-comment').addEventListener('click', async () => {
+    const commentText = document.getElementById('comment-input').value;
+    
+    if (!commentText.trim()) return;
+
+    // إنشاء مناقشة جديدة (أو الرد على موجودة)
+    const response = await fetch(`https://api.github.com/graphql`, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${GITHUB_TOKEN}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            query: `
+                mutation {
+                    createDiscussion(input: {
+                        repositoryId: "${REPO_ID}",
+                        categoryId: "${DISCUSSION_CATEGORY_ID}",
+                        title: "تعليق جديد",
+                        body: "${commentText}"
+                    }) {
+                        discussion {
+                            id
+                        }
+                    }
+                }
+            `
+        })
+    });
+
+    if (response.ok) {
+        document.getElementById('comment-input').value = '';
+        fetchComments().then(displayComments);
+    }
+});
