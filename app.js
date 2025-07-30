@@ -42,3 +42,61 @@ async function fetchComments() {
 
     return await response.json();
 }
+function displayComments(data) {
+    const commentsList = document.getElementById('comments-list');
+    commentsList.innerHTML = '';
+
+    data.data.repository.discussions.nodes.forEach(discussion => {
+        // عرض المناقشة الرئيسية
+        const discussionElement = createCommentElement(
+            discussion.author,
+            discussion.body,
+            discussion.createdAt
+        );
+        commentsList.appendChild(discussionElement);
+
+        // عرض الردود
+        discussion.comments.nodes.forEach(comment => {
+            const commentElement = createCommentElement(
+                comment.author,
+                comment.body,
+                comment.createdAt
+            );
+            commentsList.appendChild(commentElement);
+        });
+    });
+}
+
+function createCommentElement(author, body, createdAt) {
+    const commentDiv = document.createElement('div');
+    commentDiv.className = 'comment';
+
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'comment-header';
+
+    const avatarImg = document.createElement('img');
+    avatarImg.src = author.avatarUrl;
+    avatarImg.className = 'comment-avatar';
+    avatarImg.alt = `${author.login}'s avatar`;
+
+    const authorSpan = document.createElement('span');
+    authorSpan.className = 'comment-author';
+    authorSpan.textContent = author.login;
+
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'comment-time';
+    timeSpan.textContent = new Date(createdAt).toLocaleString();
+
+    headerDiv.appendChild(avatarImg);
+    headerDiv.appendChild(authorSpan);
+    headerDiv.appendChild(timeSpan);
+
+    const bodyDiv = document.createElement('div');
+    bodyDiv.className = 'comment-body';
+    bodyDiv.innerHTML = marked.parse(body); // استخدام marked.js لتحويل Markdown
+
+    commentDiv.appendChild(headerDiv);
+    commentDiv.appendChild(bodyDiv);
+
+    return commentDiv;
+}
